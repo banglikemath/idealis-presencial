@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#0b0f10" />
+<title>Idealis Presencial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
+<style>
+  :root{
+    --bg:#0b0f10;
+    --surface:#12181a;
+    --surface-2:#1a2226;
+    --line:#243036;
+    --cyan:#00c9cc;
+    --cyan-2:#71fcff;
+    --text:#eaf6f7;
+    --muted:#7d9298;
+    --danger:#ff5c6c;
+    --green:#2ecc71;
+    --yellow:#f1d94a;
+    --orange:#f39c12;
+    --red:#ff5c6c;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+    font-family:'Space Grotesk',system-ui,sans-serif;overscroll-behavior-y:none}
+  #root{max-width:520px;margin:0 auto;min-height:100vh;position:relative}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  input,textarea{font-family:inherit}
+  ::placeholder{color:var(--muted)}
+
+  .topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;
+    gap:12px;padding:14px 16px;background:rgba(11,15,16,.92);
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .topbar h1{font-size:17px;font-weight:600;margin:0;flex:1;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .topbar .sub{font-size:12px;color:var(--muted);font-weight:400}
+  .iconbtn{width:40px;height:40px;display:grid;place-items:center;
+    border-radius:12px;font-size:20px;color:var(--cyan);flex-shrink:0}
+  .iconbtn:active{background:var(--surface-2)}
+
+  .screen{padding:16px 16px 120px}
+  .search{width:100%;padding:14px 16px;background:var(--surface);
+    border:1px solid var(--line);border-radius:14px;color:var(--text);
+    font-size:16px;margin-bottom:14px;outline:none}
+  .search:focus{border-color:var(--cyan)}
+
+  .card{background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius);padding:16px;margin-bottom:12px}
+  .card:active{border-color:var(--line)}
+  .rowcard{display:flex;align-items:center;gap:14px}
+  .rowcard .avatar{width:44px;height:44px;border-radius:12px;flex-shrink:0;
+    display:grid;place-items:center;font-weight:700;font-size:18px;
+    background:linear-gradient(135deg,var(--cyan),var(--cyan-2));color:#04191a}
+  .rowcard .meta{flex:1;min-width:0}
+  .rowcard .meta .name{font-weight:600;font-size:16px}
+  .rowcard .meta .desc{font-size:13px;color:var(--muted);margin-top:2px}
+  .rowcard .chev{color:var(--muted);font-size:20px}
+
+  .fab{position:fixed;right:calc(50% - 260px + 20px);bottom:24px;z-index:30;
+    height:56px;padding:0 22px;border-radius:28px;font-size:16px;font-weight:600;
+    background:linear-gradient(135deg,var(--cyan),var(--cyan-2));color:#04191a;
+    display:flex;align-items:center;gap:8px;
+    box-shadow:0 8px 24px rgba(0,201,204,.35)}
+  .fab:active{transform:translateY(1px)}
+  @media(max-width:540px){.fab{right:20px}}
+
+  .btn{width:100%;padding:15px;border-radius:14px;font-size:16px;font-weight:600;
+    background:linear-gradient(135deg,var(--cyan),var(--cyan-2));color:#04191a}
+  .btn:active{transform:translateY(1px)}
+  .btn.ghost{background:var(--surface-2);color:var(--text);border:1px solid var(--line)}
+  .btn.danger{background:var(--surface-2);color:var(--danger);border:1px solid var(--line)}
+
+  .empty{text-align:center;padding:60px 24px;color:var(--muted)}
+  .empty .big{font-size:40px;margin-bottom:14px}
+  .empty p{font-size:15px;line-height:1.5;margin:0}
+
+  .sesscard{background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;
+    display:flex;align-items:center;gap:12px}
+  .sesscard .date{font-weight:600;font-size:15px}
+  .sesscard .count{font-size:13px;color:var(--muted);margin-top:2px}
+
+  .exrow{background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius);padding:14px 16px;margin-bottom:10px}
+  .exrow .exhead{display:flex;align-items:flex-start;gap:10px}
+  .exrow .exname{font-weight:600;font-size:16px;flex:1;line-height:1.3}
+  .exrow .exmeta{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .pill{font-size:13px;padding:5px 11px;border-radius:20px;
+    background:var(--surface-2);border:1px solid var(--line);color:var(--text)}
+  .pill .k{color:var(--muted);margin-right:4px}
+  .pill.dot{display:flex;align-items:center;gap:6px}
+  .pill .swatch{width:10px;height:10px;border-radius:50%}
+  .exactions{display:flex;gap:6px}
+  .exactions button{width:34px;height:34px;border-radius:10px;font-size:16px;
+    display:grid;place-items:center;background:var(--surface-2);color:var(--muted)}
+  .exactions button:active{background:var(--line)}
+  .exactions .evo{color:var(--cyan);font-size:13px;font-weight:600;width:auto;padding:0 12px}
+
+  /* modal */
+  .backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:40;
+    display:flex;align-items:flex-end;justify-content:center}
+  .sheet{width:100%;max-width:520px;background:var(--surface);
+    border-radius:22px 22px 0 0;border-top:1px solid var(--line);
+    padding:20px 16px calc(20px + env(safe-area-inset-bottom));
+    max-height:92vh;overflow-y:auto;animation:up .22s ease}
+  @keyframes up{from{transform:translateY(30px);opacity:.6}to{transform:none;opacity:1}}
+  .sheet h2{margin:0 0 16px;font-size:18px;font-weight:600}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+  .field input,.field textarea{width:100%;padding:14px;background:var(--bg);
+    border:1px solid var(--line);border-radius:12px;color:var(--text);
+    font-size:16px;outline:none;resize:none}
+  .field input:focus,.field textarea:focus{border-color:var(--cyan)}
+
+  .autowrap{position:relative}
+  .autolist{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:5;
+    background:var(--surface-2);border:1px solid var(--line);border-radius:12px;
+    overflow:hidden;max-height:200px;overflow-y:auto}
+  .autolist div{padding:12px 14px;font-size:15px;border-bottom:1px solid var(--line)}
+  .autolist div:last-child{border-bottom:none}
+  .autolist div:active{background:var(--line)}
+
+  .scale{display:flex;gap:6px;flex-wrap:wrap}
+  .scale button{flex:1;min-width:calc(9% - 6px);aspect-ratio:1;border-radius:10px;
+    font-size:14px;font-weight:600;background:var(--surface-2);
+    border:1px solid var(--line);color:var(--muted)}
+  .scale button.on{color:#04191a;border-color:transparent}
+  .scalelabel{display:flex;justify-content:space-between;font-size:11px;
+    color:var(--muted);margin-top:6px}
+
+  .sheetactions{display:flex;gap:10px;margin-top:8px}
+  .sheetactions .btn{flex:1}
+
+  .chartwrap{background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius);padding:16px 8px 8px;margin-bottom:14px}
+  .chartwrap h3{margin:0 0 4px 8px;font-size:15px;font-weight:600}
+  .legend{display:flex;gap:14px;padding:4px 8px 10px;flex-wrap:wrap}
+  .legend span{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px}
+  .legend .d{width:9px;height:9px;border-radius:50%}
+
+  .histrow{background:var(--surface);border:1px solid var(--line);
+    border-radius:14px;padding:12px 14px;margin-bottom:8px;
+    display:flex;align-items:center;gap:10px}
+  .histrow .hdate{font-weight:600;font-size:14px;min-width:74px}
+  .histrow .hmeta{flex:1;display:flex;flex-wrap:wrap;gap:6px}
+  .toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%);z-index:60;
+    background:var(--surface-2);border:1px solid var(--cyan);color:var(--cyan-2);
+    padding:10px 18px;border-radius:20px;font-size:14px;font-weight:500;
+    animation:fade .3s ease}
+  @keyframes fade{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useMemo,useRef} = React;
+const RC = window.Recharts || {};
+
+/* ---------- storage local (offline-first, à prova de content://) ---------- */
+const DB_KEY = 'idealis_presencial_v1';
+// alguns contextos do Android (abrir arquivo via content://) bloqueiam o
+// localStorage e lançam erro no acesso. Detectamos e caímos pra memória
+// interna, evitando que qualquer leitura/escrita quebre o app (tela preta).
+let LS_OK = false;
+try{
+  const t='__idealis_test__';
+  window.localStorage.setItem(t,'1');
+  window.localStorage.removeItem(t);
+  LS_OK = true;
+}catch(e){ LS_OK = false; }
+let memDB = {students:[]};
+
+function loadDB(){
+  if(!LS_OK) return memDB;
+  try{
+    const r = window.localStorage.getItem(DB_KEY);
+    return r ? JSON.parse(r) : {students:[]};
+  }catch(e){ return {students:[]}; }
+}
+function saveDB(db){
+  memDB = db;
+  if(!LS_OK) return;
+  try{ window.localStorage.setItem(DB_KEY, JSON.stringify(db)); }catch(e){}
+}
+const uid = ()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const todayISO = ()=>new Date().toISOString().slice(0,10);
+function fmtDate(iso){
+  const [y,m,d]=iso.split('-');return `${d}/${m}/${y.slice(2)}`;
+}
+
+/* exemplo de catálogo local em cache — na Fase 2 vem do Sheets do Cardápio */
+const CATALOGO_EXEMPLO = [
+  'Supino Reto','Supino Inclinado','Remada Baixa Anatômica','Puxada Frontal',
+  'Agachamento Livre','Leg Press','Cadeira Extensora','Mesa Flexora',
+  'Desenvolvimento Militar','Elevação Lateral','Rosca Direta','Tríceps Corda',
+  'Stiff','Panturrilha em Pé','Abdominal Infra','Prancha Isométrica'
+];
+
+/* cores de intensidade/dor 0-10 */
+function scaleColor(v){
+  if(v==null) return 'var(--line)';
+  if(v<=3) return 'var(--green)';
+  if(v<=6) return 'var(--yellow)';
+  if(v<=8) return 'var(--orange)';
+  return 'var(--red)';
+}
+
+/* ---------- app ---------- */
+function App(){
+  const [db,setDb] = useState(loadDB);
+  const [view,setView] = useState({name:'students'});
+  const [toast,setToast] = useState(null);
+  useEffect(()=>saveDB(db),[db]);
+  const flash = (m)=>{setToast(m);setTimeout(()=>setToast(null),1400);};
+
+  const nav = (v)=>setView(v);
+
+  let screen;
+  if(view.name==='students') screen=<Students db={db} setDb={setDb} nav={nav}/>;
+  else if(view.name==='student') screen=<StudentDetail db={db} setDb={setDb} nav={nav} studentId={view.studentId}/>;
+  else if(view.name==='session') screen=<Session db={db} setDb={setDb} nav={nav} studentId={view.studentId} sessionId={view.sessionId} flash={flash}/>;
+  else if(view.name==='evolution') screen=<Evolution db={db} setDb={setDb} nav={nav} studentId={view.studentId} exName={view.exName} flash={flash}/>;
+
+  return (<>
+    {!LS_OK && <div style={{background:'#3a2a10',color:'#f1d94a',fontSize:12,
+      textAlign:'center',padding:'7px 12px',lineHeight:1.4}}>
+      ⚠️ Modo temporário: os dados somem ao fechar. Publique no Netlify para salvar de verdade.
+    </div>}
+    {screen}
+    {toast && <div className="toast">{toast}</div>}
+  </>);
+}
+
+/* ---------- topbar ---------- */
+function TopBar({title,sub,onBack,onMenu}){
+  return (<div className="topbar">
+    {onBack
+      ? <button className="iconbtn" onClick={onBack}>‹</button>
+      : <button className="iconbtn" onClick={onMenu}>≡</button>}
+    <h1>{title}{sub && <><br/><span className="sub">{sub}</span></>}</h1>
+  </div>);
+}
+
+/* ---------- tela: alunos ---------- */
+function Students({db,setDb,nav}){
+  const [q,setQ]=useState('');
+  const [adding,setAdding]=useState(false);
+  const [name,setName]=useState('');
+  const list = db.students.filter(s=>s.name.toLowerCase().includes(q.toLowerCase()));
+
+  const add=()=>{
+    if(!name.trim())return;
+    setDb({...db,students:[...db.students,{id:uid(),name:name.trim(),sessions:[]}]});
+    setName('');setAdding(false);
+  };
+
+  return (<>
+    <TopBar title="Idealis Presencial" sub="Seus alunos" onMenu={()=>{}}/>
+    <div className="screen">
+      <input className="search" placeholder="Buscar aluno…" value={q}
+        onChange={e=>setQ(e.target.value)}/>
+      {list.length===0 && <div className="empty">
+        <div className="big">🏋️</div>
+        <p>{q?'Nenhum aluno com esse nome.':'Nenhum aluno ainda. Toque em “+ Aluno” para começar.'}</p>
+      </div>}
+      {list.map(s=>(
+        <div key={s.id} className="card rowcard" onClick={()=>nav({name:'student',studentId:s.id})}>
+          <div className="avatar">{s.name.slice(0,1).toUpperCase()}</div>
+          <div className="meta">
+            <div className="name">{s.name}</div>
+            <div className="desc">{s.sessions.length} {s.sessions.length===1?'sessão':'sessões'}</div>
+          </div>
+          <div className="chev">›</div>
+        </div>
+      ))}
+    </div>
+    <button className="fab" onClick={()=>setAdding(true)}>＋ Aluno</button>
+
+    {adding && <div className="backdrop" onClick={()=>setAdding(false)}>
+      <div className="sheet" onClick={e=>e.stopPropagation()}>
+        <h2>Novo aluno</h2>
+        <div className="field">
+          <label>Nome</label>
+          <input autoFocus value={name} onChange={e=>setName(e.target.value)}
+            placeholder="Ex: Lucas Carvalho"/>
+        </div>
+        <div className="sheetactions">
+          <button className="btn ghost" onClick={()=>setAdding(false)}>Cancelar</button>
+          <button className="btn" onClick={add}>Salvar</button>
+        </div>
+      </div>
+    </div>}
+  </>);
+}
+
+/* ---------- tela: detalhe do aluno (sessões) ---------- */
+function StudentDetail({db,setDb,nav,studentId}){
+  const s = db.students.find(x=>x.id===studentId);
+  if(!s) return null;
+  const sessions = [...s.sessions].sort((a,b)=>b.date.localeCompare(a.date));
+
+  const newSession=()=>{
+    const sess={id:uid(),date:todayISO(),exercises:[]};
+    setDb({...db,students:db.students.map(x=>x.id===studentId
+      ?{...x,sessions:[...x.sessions,sess]}:x)});
+    nav({name:'session',studentId,sessionId:sess.id});
+  };
+
+  return (<>
+    <TopBar title={s.name} sub="Histórico de sessões" onBack={()=>nav({name:'students'})}/>
+    <div className="screen">
+      {sessions.length===0 && <div className="empty">
+        <div className="big">📋</div>
+        <p>Nenhuma sessão registrada. Toque em “Nova sessão” para começar a aula.</p>
+      </div>}
+      {sessions.map(sess=>(
+        <div key={sess.id} className="sesscard" onClick={()=>nav({name:'session',studentId,sessionId:sess.id})}>
+          <div style={{flex:1}}>
+            <div className="date">{fmtDate(sess.date)}</div>
+            <div className="count">{sess.exercises.length} {sess.exercises.length===1?'exercício':'exercícios'}</div>
+          </div>
+          <div className="chev" style={{color:'var(--muted)',fontSize:20}}>›</div>
+        </div>
+      ))}
+    </div>
+    <button className="fab" onClick={newSession}>＋ Nova sessão</button>
+  </>);
+}
+
+/* ---------- seletor de escala 0-10 ---------- */
+function Scale({value,onChange,leftLabel,rightLabel}){
+  return (<>
+    <div className="scale">
+      {Array.from({length:11},(_,i)=>i).map(n=>(
+        <button key={n} className={value===n?'on':''}
+          style={value===n?{background:scaleColor(n)}:{}}
+          onClick={()=>onChange(value===n?null:n)}>{n}</button>
+      ))}
+    </div>
+    <div className="scalelabel"><span>{leftLabel}</span><span>{rightLabel}</span></div>
+  </>);
+}
+
+/* ---------- modal de exercício (criar/editar) ---------- */
+function ExerciseSheet({initial,onSave,onClose}){
+  const [name,setName]=useState(initial?.name||'');
+  const [series,setSeries]=useState(initial?.series||'');
+  const [carga,setCarga]=useState(initial?.carga||'');
+  const [intensidade,setInt]=useState(initial?.intensidade??null);
+  const [dor,setDor]=useState(initial?.dor??null);
+  const [showAuto,setShowAuto]=useState(false);
+
+  const sugestoes = name.trim().length>=2
+    ? CATALOGO_EXEMPLO.filter(e=>e.toLowerCase().includes(name.toLowerCase())
+        && e.toLowerCase()!==name.toLowerCase()).slice(0,5)
+    : [];
+
+  const save=()=>{
+    if(!name.trim())return;
+    onSave({name:name.trim(),series:series.trim(),carga:carga.trim(),intensidade,dor});
+  };
+
+  return (<div className="backdrop" onClick={onClose}>
+    <div className="sheet" onClick={e=>e.stopPropagation()}>
+      <h2>{initial?'Editar exercício':'Novo exercício'}</h2>
+
+      <div className="field autowrap">
+        <label>Exercício</label>
+        <input autoFocus value={name}
+          onChange={e=>{setName(e.target.value);setShowAuto(true);}}
+          onFocus={()=>setShowAuto(true)}
+          placeholder="Ex: Supino Reto"/>
+        {showAuto && sugestoes.length>0 && <div className="autolist">
+          {sugestoes.map(sug=>(
+            <div key={sug} onClick={()=>{setName(sug);setShowAuto(false);}}>{sug}</div>
+          ))}
+        </div>}
+      </div>
+
+      <div className="field">
+        <label>Séries</label>
+        <input value={series} onChange={e=>setSeries(e.target.value)}
+          placeholder="Ex: 4x12 + Isometria"/>
+      </div>
+
+      <div className="field">
+        <label>Carga</label>
+        <input value={carga} onChange={e=>setCarga(e.target.value)}
+          placeholder="Ex: 40kg"/>
+      </div>
+
+      <div className="field">
+        <label>Intensidade (esforço percebido nessa carga)</label>
+        <Scale value={intensidade} onChange={setInt} leftLabel="Leve" rightLabel="Máxima"/>
+      </div>
+
+      <div className="field">
+        <label>Dor</label>
+        <Scale value={dor} onChange={setDor} leftLabel="Sem dor" rightLabel="Dor forte"/>
+      </div>
+
+      <div className="sheetactions">
+        <button className="btn ghost" onClick={onClose}>Cancelar</button>
+        <button className="btn" onClick={save}>Salvar</button>
+      </div>
+    </div>
+  </div>);
+}
+
+/* ---------- tela: sessão ativa ---------- */
+function Session({db,setDb,nav,studentId,sessionId,flash}){
+  const s = db.students.find(x=>x.id===studentId);
+  const sess = s?.sessions.find(x=>x.id===sessionId);
+  const [editing,setEditing]=useState(null); // null | 'new' | exercise obj
+  if(!sess) return null;
+
+  const upd=(exs)=>setDb({...db,students:db.students.map(x=>x.id===studentId
+    ?{...x,sessions:x.sessions.map(ss=>ss.id===sessionId?{...ss,exercises:exs}:ss)}:x)});
+
+  const onSave=(data)=>{
+    if(editing==='new'){
+      upd([...sess.exercises,{id:uid(),date:sess.date,...data}]);
+      flash('Exercício salvo ✓');
+    }else{
+      upd(sess.exercises.map(e=>e.id===editing.id?{...e,...data}:e));
+      flash('Atualizado ✓');
+    }
+    setEditing(null);
+  };
+  const del=(id)=>upd(sess.exercises.filter(e=>e.id!==id));
+
+  return (<>
+    <TopBar title={s.name} sub={`Sessão · ${fmtDate(sess.date)}`}
+      onBack={()=>nav({name:'student',studentId})}/>
+    <div className="screen">
+      {sess.exercises.length===0 && <div className="empty">
+        <div className="big">＋</div>
+        <p>Sessão vazia. Toque em “+ Exercício” para registrar o primeiro.</p>
+      </div>}
+      {sess.exercises.map(ex=>(
+        <div key={ex.id} className="exrow">
+          <div className="exhead">
+            <div className="exname">{ex.name}</div>
+            <div className="exactions">
+              <button className="evo" onClick={()=>nav({name:'evolution',studentId,exName:ex.name})}>Evolução</button>
+              <button onClick={()=>setEditing(ex)}>✎</button>
+              <button onClick={()=>del(ex.id)}>🗑</button>
+            </div>
+          </div>
+          <div className="exmeta">
+            {ex.series && <span className="pill"><span className="k">Séries</span>{ex.series}</span>}
+            {ex.carga && <span className="pill"><span className="k">Carga</span>{ex.carga}</span>}
+            {ex.intensidade!=null && <span className="pill dot">
+              <span className="swatch" style={{background:scaleColor(ex.intensidade)}}></span>
+              <span className="k">Int</span>{ex.intensidade}</span>}
+            {ex.dor!=null && <span className="pill dot">
+              <span className="swatch" style={{background:scaleColor(ex.dor)}}></span>
+              <span className="k">Dor</span>{ex.dor}</span>}
+          </div>
+        </div>
+      ))}
+    </div>
+    <button className="fab" onClick={()=>setEditing('new')}>＋ Exercício</button>
+    {editing && <ExerciseSheet
+      initial={editing==='new'?null:editing}
+      onSave={onSave} onClose={()=>setEditing(null)}/>}
+  </>);
+}
+
+/* ---------- tela: evolução do exercício ---------- */
+function Evolution({db,setDb,nav,studentId,exName,flash}){
+  const s = db.students.find(x=>x.id===studentId);
+  const [quick,setQuick]=useState('');
+
+  // reúne todas as entradas desse exercício (match por nome normalizado) em todas as sessões
+  const norm=(t)=>t.trim().toLowerCase();
+  const entries = useMemo(()=>{
+    const out=[];
+    s.sessions.forEach(sess=>sess.exercises.forEach(ex=>{
+      if(norm(ex.name)===norm(exName))
+        out.push({...ex,date:ex.date||sess.date,sessId:sess.id});
+    }));
+    return out.sort((a,b)=>a.date.localeCompare(b.date));
+  },[s,exName]);
+
+  // extrai número da carga pra plotar (aceita "40kg", "40", "40 kg")
+  const numFrom=(c)=>{const m=(c||'').replace(',','.').match(/[\d.]+/);return m?parseFloat(m[0]):null;};
+  const chartData = entries.map(e=>({
+    date:fmtDate(e.date), carga:numFrom(e.carga), dor:e.dor
+  })).filter(d=>d.carga!=null);
+
+  const addQuick=()=>{
+    if(!quick.trim())return;
+    // registro avulso vai numa "sessão avulsa" do dia
+    const sess={id:uid(),date:todayISO(),exercises:[{id:uid(),date:todayISO(),
+      name:exName,series:'',carga:quick.trim(),intensidade:null,dor:null}]};
+    setDb({...db,students:db.students.map(x=>x.id===studentId
+      ?{...x,sessions:[...x.sessions,sess]}:x)});
+    setQuick('');flash('Carga registrada ✓');
+  };
+
+  const chartReady = !!(RC && RC.LineChart && RC.ResponsiveContainer);
+  const {LineChart,Line,XAxis,YAxis,CartesianGrid,Tooltip,ResponsiveContainer,Dot}=RC;
+  const ColorDot=(props)=>{
+    const {cx,cy,payload}=props;
+    return <circle cx={cx} cy={cy} r={5} fill={scaleColor(payload.dor)}
+      stroke="#0b0f10" strokeWidth={2}/>;
+  };
+
+  return (<>
+    <TopBar title={exName} sub="Evolução de cargas" onBack={()=>nav({name:'session',studentId,
+      sessionId:s.sessions[s.sessions.length-1]?.id})}/>
+    <div className="screen">
+      {chartData.length>=2 && chartReady ? <div className="chartwrap">
+        <h3>Carga × Data</h3>
+        <div className="legend">
+          <span><span className="d" style={{background:'var(--green)'}}></span>Dor 0-3</span>
+          <span><span className="d" style={{background:'var(--yellow)'}}></span>4-6</span>
+          <span><span className="d" style={{background:'var(--orange)'}}></span>7-8</span>
+          <span><span className="d" style={{background:'var(--red)'}}></span>9-10</span>
+        </div>
+        <ResponsiveContainer width="100%" height={230}>
+          <LineChart data={chartData} margin={{top:6,right:14,left:-16,bottom:4}}>
+            <CartesianGrid stroke="#243036" strokeDasharray="3 3"/>
+            <XAxis dataKey="date" tick={{fill:'#7d9298',fontSize:11}} tickMargin={8}/>
+            <YAxis tick={{fill:'#7d9298',fontSize:11}}/>
+            <Tooltip contentStyle={{background:'#12181a',border:'1px solid #243036',
+              borderRadius:12,color:'#eaf6f7'}}/>
+            <Line type="monotone" dataKey="carga" stroke="#00c9cc" strokeWidth={3}
+              dot={<ColorDot/>} activeDot={{r:7}}/>
+          </LineChart>
+        </ResponsiveContainer>
+      </div> : <div className="card" style={{textAlign:'center',color:'var(--muted)'}}>
+        {!chartReady?'Gráfico indisponível (sem conexão para carregar o componente). O histórico abaixo continua funcionando.':chartData.length===1?'Só um registro com carga até agora — o gráfico aparece a partir de 2.':'Sem cargas numéricas registradas ainda pra plotar.'}
+      </div>}
+
+      <div className="card">
+        <div className="field" style={{marginBottom:10}}>
+          <label>Inserir carga (registro avulso)</label>
+          <input value={quick} onChange={e=>setQuick(e.target.value)} placeholder="Ex: 60kg"/>
+        </div>
+        <button className="btn" onClick={addQuick}>Salvar</button>
+      </div>
+
+      <h3 style={{fontSize:15,margin:'18px 4px 10px',color:'var(--muted)'}}>Histórico</h3>
+      {[...entries].reverse().map(e=>(
+        <div key={e.id} className="histrow">
+          <div className="hdate">{fmtDate(e.date)}</div>
+          <div className="hmeta">
+            {e.carga && <span className="pill"><span className="k">Carga</span>{e.carga}</span>}
+            {e.series && <span className="pill"><span className="k">Séries</span>{e.series}</span>}
+            {e.intensidade!=null && <span className="pill dot">
+              <span className="swatch" style={{background:scaleColor(e.intensidade)}}></span>{e.intensidade}</span>}
+            {e.dor!=null && <span className="pill dot">
+              <span className="swatch" style={{background:scaleColor(e.dor)}}></span>Dor {e.dor}</span>}
+          </div>
+        </div>
+      ))}
+      {entries.length===0 && <div className="empty"><p>Nenhum registro desse exercício ainda.</p></div>}
+    </div>
+  </>);
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
