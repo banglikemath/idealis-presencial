@@ -138,6 +138,10 @@
   .chip .cdot{width:9px;height:9px;border-radius:50%;opacity:.35;transition:.12s}
   .chip.on{background:rgba(0,201,204,.06)}
   .chip.on .cdot{opacity:1}
+  .mini{margin-bottom:2px}
+  .mini:last-of-type{margin-bottom:0}
+  .minihdr{font-size:12px;font-weight:600;padding:2px 8px 0}
+  .mutednote{color:var(--muted);font-size:12px;text-align:center;padding:24px 8px}
   .histrow{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;
     margin-bottom:8px;display:flex;align-items:center;gap:10px}
   .histrow .hdate{font-weight:600;font-size:14px;min-width:74px}
@@ -476,14 +480,14 @@ function Evolution({db,setDb,nav,studentId,exName,back,flash}){
   let chart;
   if(RC && chartData.length>=2){
     const LineChart=RC.LineChart, Line=RC.Line, XAxis=RC.XAxis, YAxis=RC.YAxis, CartesianGrid=RC.CartesianGrid, Tooltip=RC.Tooltip, ResponsiveContainer=RC.ResponsiveContainer;
-    const ColorDot=(p)=>(<circle cx={p.cx} cy={p.cy} r={4.5} fill={scaleColor(p.payload.dor)} stroke="#0b0f10" strokeWidth={2}/>);
+    const ColorDot=(p)=>(p.cy==null?null:<circle cx={p.cx} cy={p.cy} r={4.5} fill={scaleColor(p.payload.dor)} stroke="#0b0f10" strokeWidth={2}/>);
     const M=[
-      {k:'carga',label:'Carga (kg)',color:'#00c9cc',axis:'left',dash:null,width:3},
-      {k:'volume',label:'Volume (kg×reps)',color:'#9b7cff',axis:'left',dash:'5 4',width:2},
-      {k:'intensidade',label:'Intensidade',color:'#f1d94a',axis:'right',dash:'2 3',width:2},
-      {k:'dor',label:'Dor',color:'#ff5c6c',axis:'right',dash:'2 3',width:2},
+      {k:'carga',label:'Carga (kg)',color:'#00c9cc',domain:['auto','auto'],width:3},
+      {k:'volume',label:'Volume (kg×reps)',color:'#9b7cff',domain:['auto','auto'],width:2},
+      {k:'intensidade',label:'Intensidade',color:'#f1d94a',domain:[0,10],ticks:[0,5,10],width:2},
+      {k:'dor',label:'Dor',color:'#ff5c6c',domain:[0,10],ticks:[0,5,10],width:2},
     ];
-    const anyRight = metrics.intensidade || metrics.dor;
+    const active=M.filter(m=>metrics[m.k]);
     chart=(<div className="chartwrap">
       <h3>Progressão</h3>
       <div className="chips">
@@ -494,27 +498,29 @@ function Evolution({db,setDb,nav,studentId,exName,back,flash}){
             <span className="cdot" style={{background:m.color}}></span>{m.label}
           </button>))}
       </div>
-      <ResponsiveContainer width="100%" height={250}>
-        <LineChart data={chartData} margin={{top:6,right:anyRight?4:14,left:-14,bottom:4}}>
-          <CartesianGrid stroke="#243036" strokeDasharray="3 3"/>
-          <XAxis dataKey="date" tick={{fill:'#7d9298',fontSize:11}} tickMargin={8}/>
-          <YAxis yAxisId="left" tick={{fill:'#7d9298',fontSize:11}}/>
-          <YAxis yAxisId="right" orientation="right" domain={[0,10]} ticks={[0,2,4,6,8,10]} tick={{fill:'#7d9298',fontSize:11}} hide={!anyRight}/>
-          <Tooltip contentStyle={{background:'#12181a',border:'1px solid #243036',borderRadius:12,color:'#eaf6f7'}}/>
-          {M.filter(m=>metrics[m.k]).map(m=>(
-            <Line key={m.k} yAxisId={m.axis} type="monotone" dataKey={m.k} name={m.label}
-              stroke={m.color} strokeWidth={m.width} strokeDasharray={m.dash||undefined} connectNulls
-              dot={m.k==='carga'?<ColorDot/>:{r:3,fill:m.color,strokeWidth:0}} activeDot={{r:6}}/>
-          ))}
-        </LineChart>
-      </ResponsiveContainer>
-      <div className="legend">
+      {active.length===0 && <div className="mutednote">Ative uma métrica acima pra ver o gráfico.</div>}
+      {active.map((m,i)=>(
+        <div className="mini" key={m.k}>
+          <div className="minihdr" style={{color:m.color}}>{m.label}</div>
+          <ResponsiveContainer width="100%" height={i===active.length-1?150:118}>
+            <LineChart data={chartData} margin={{top:4,right:12,left:-16,bottom:i===active.length-1?4:0}}>
+              <CartesianGrid stroke="#243036" strokeDasharray="3 3"/>
+              <XAxis dataKey="date" tick={i===active.length-1?{fill:'#7d9298',fontSize:11}:false} tickMargin={8} height={i===active.length-1?24:6}/>
+              <YAxis domain={m.domain} ticks={m.ticks||undefined} tick={{fill:'#7d9298',fontSize:11}} width={40}/>
+              <Tooltip contentStyle={{background:'#12181a',border:'1px solid #243036',borderRadius:12,color:'#eaf6f7'}}/>
+              <Line type="monotone" dataKey={m.k} name={m.label} stroke={m.color} strokeWidth={m.width} connectNulls
+                dot={m.k==='carga'?<ColorDot/>:{r:3,fill:m.color,strokeWidth:0}} activeDot={{r:6}}/>
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      ))}
+      {metrics.carga && <div className="legend">
         <span className="lgtitle">Bolinha da carga = Dor:</span>
         <span><span className="d" style={{background:'var(--green)'}}></span>0-3</span>
         <span><span className="d" style={{background:'var(--yellow)'}}></span>4-6</span>
         <span><span className="d" style={{background:'var(--orange)'}}></span>7-8</span>
         <span><span className="d" style={{background:'var(--red)'}}></span>9-10</span>
-      </div>
+      </div>}
     </div>);
   }else{
     chart=(<div className="card" style={{textAlign:'center',color:'var(--muted)'}}>
