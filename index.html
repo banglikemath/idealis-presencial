@@ -49,6 +49,14 @@
   .rowcard .meta .name{font-weight:600;font-size:16px}
   .rowcard .meta .desc{font-size:13px;color:var(--muted);margin-top:2px}
   .rowcard .chev{color:var(--muted);font-size:20px}
+  .menudot{width:40px;height:40px;flex-shrink:0;display:grid;place-items:center;
+    border-radius:10px;color:var(--muted);font-size:22px;line-height:1}
+  .menudot:active{background:var(--surface-2)}
+  .btn.danger{background:transparent;color:var(--danger);border:1px solid var(--danger)}
+  .menusheet button.opt{width:100%;text-align:left;padding:15px 8px;font-size:16px;
+    border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+  .menusheet button.opt:last-of-type{border-bottom:none}
+  .menusheet button.opt.del{color:var(--danger)}
   .fab{position:fixed;right:calc(50% - 260px + 20px);bottom:24px;z-index:30;height:56px;padding:0 22px;
     border-radius:28px;font-size:16px;font-weight:600;background:linear-gradient(135deg,var(--cyan),var(--cyan-2));
     color:#04191a;display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(0,201,204,.35)}
@@ -70,7 +78,7 @@
   .treino .meta .desc{font-size:13px;color:var(--muted);margin-top:2px}
   .exrow{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px}
   .exrow .exname{font-weight:600;font-size:16px;line-height:1.3}
-  .exrow .exseries{font-size:13px;color:var(--muted);margin-top:3px;font-weight:400}
+  .exrow .exseries{display:inline-block;font-size:15px;color:var(--cyan-2);margin-top:6px;font-weight:600;letter-spacing:.2px;background:rgba(0,201,204,.10);border:1px solid rgba(0,201,204,.28);padding:3px 10px;border-radius:10px}
   .exrow .exlast{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
   .pill{font-size:13px;padding:5px 11px;border-radius:20px;background:var(--surface-2);border:1px solid var(--line);color:var(--text)}
   .pill .k{color:var(--muted);margin-right:4px}
@@ -85,6 +93,13 @@
   .exactions .reg{background:linear-gradient(135deg,var(--cyan),var(--cyan-2));color:#04191a;border:none;flex:1.5}
   .exactions .evo{color:var(--cyan);flex:1}
   .exactions .mini{flex:0 0 44px;color:var(--muted)}
+  .exhead{display:flex;align-items:flex-start;gap:10px}
+  .exhead .exinfo{flex:1;min-width:0}
+  .reorder{display:flex;flex-direction:column;gap:4px;flex-shrink:0;margin-top:2px}
+  .reorder button{width:34px;height:30px;border-radius:8px;display:grid;place-items:center;
+    font-size:16px;background:var(--surface-2);border:1px solid var(--line);color:var(--cyan)}
+  .reorder button:active{background:var(--line)}
+  .reorder button:disabled{color:var(--line);border-color:var(--surface-2);opacity:.5}
   .backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:40;display:flex;align-items:flex-end;justify-content:center}
   .sheet{width:100%;max-width:520px;background:var(--surface);border-radius:22px 22px 0 0;border-top:1px solid var(--line);
     padding:20px 16px calc(20px + env(safe-area-inset-bottom));max-height:92vh;overflow-y:auto;animation:up .22s ease}
@@ -121,6 +136,7 @@
   .histrow .hdate{font-weight:600;font-size:14px;min-width:74px}
   .histrow .hmeta{flex:1;display:flex;flex-wrap:wrap;gap:6px}
   .histrow .hdel{width:30px;height:30px;border-radius:9px;color:var(--muted);display:grid;place-items:center;background:var(--surface-2)}
+  .histrow .hedit{width:30px;height:30px;border-radius:9px;color:var(--cyan);display:grid;place-items:center;background:var(--surface-2);margin-left:2px}
   .toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%);z-index:60;background:var(--surface-2);
     border:1px solid var(--cyan);color:var(--cyan-2);padding:10px 18px;border-radius:20px;font-size:14px;
     font-weight:500;animation:fade .3s ease;max-width:90%;text-align:center}
@@ -174,12 +190,47 @@ function TopBar({title,sub,onBack}){
     <h1>{title}{sub && <React.Fragment><br/><span className="sub">{sub}</span></React.Fragment>}</h1>
   </div>);
 }
+/* menu reutilizável: editar nome + apagar (com confirmação) para aluno/treino/exercício */
+function RowMenu({label,currentName,onRename,onDelete,onClose}){
+  const [mode,setMode]=useState('menu'); // menu | rename | confirm
+  const [nome,setNome]=useState(currentName||'');
+  return (<div className="backdrop" onClick={onClose}>
+    <div className="sheet menusheet" onClick={e=>e.stopPropagation()}>
+      {mode==='menu' && <React.Fragment>
+        <h2>{currentName}</h2><div className="h2sub">O que deseja fazer?</div>
+        <button className="opt" onClick={()=>setMode('rename')}>✎ Editar nome</button>
+        <button className="opt del" onClick={()=>setMode('confirm')}>🗑 Apagar {label}</button>
+        <div className="sheetactions" style={{marginTop:16}}>
+          <button className="btn ghost" onClick={onClose}>Fechar</button></div>
+      </React.Fragment>}
+      {mode==='rename' && <React.Fragment>
+        <h2>Editar nome</h2><div className="h2sub">{label}</div>
+        <div className="field"><label>Nome</label>
+          <input autoFocus value={nome} onChange={e=>setNome(e.target.value)}/></div>
+        <div className="sheetactions">
+          <button className="btn ghost" onClick={()=>setMode('menu')}>Voltar</button>
+          <button className="btn" onClick={()=>{ if(nome.trim()){onRename(nome.trim());onClose();} }}>Salvar</button></div>
+      </React.Fragment>}
+      {mode==='confirm' && <React.Fragment>
+        <h2>Apagar {label}?</h2>
+        <div className="h2sub">“{currentName}” será removido. Essa ação não pode ser desfeita.</div>
+        <div className="sheetactions">
+          <button className="btn ghost" onClick={()=>setMode('menu')}>Cancelar</button>
+          <button className="btn danger" onClick={()=>{onDelete();onClose();}}>Apagar</button></div>
+      </React.Fragment>}
+    </div>
+  </div>);
+}
+
 function Students({db,setDb,nav}){
   const [q,setQ]=useState('');
   const [adding,setAdding]=useState(false);
   const [name,setName]=useState('');
+  const [menu,setMenu]=useState(null); // aluno em edição
   const list=db.students.filter(s=>s.name.toLowerCase().includes(q.toLowerCase()));
   const add=()=>{ if(!name.trim())return; setDb({...db,students:[...db.students,{id:uid(),name:name.trim(),treinos:[]}]}); setName('');setAdding(false); };
+  const renameStudent=(id,novo)=>setDb({...db,students:db.students.map(x=>x.id===id?{...x,name:novo}:x)});
+  const deleteStudent=(id)=>setDb({...db,students:db.students.filter(x=>x.id!==id)});
   return (<React.Fragment>
     <TopBar title="Idealis Presencial" sub="Seus alunos"/>
     <div className="screen">
@@ -191,6 +242,7 @@ function Students({db,setDb,nav}){
           <div className="avatar">{s.name.slice(0,1).toUpperCase()}</div>
           <div className="meta"><div className="name">{s.name}</div>
             <div className="desc">{(s.treinos||[]).length} {(s.treinos||[]).length===1?'treino':'treinos'}</div></div>
+          <button className="menudot" onClick={e=>{e.stopPropagation();setMenu(s);}}>⋯</button>
           <div className="chev">›</div>
         </div>))}
     </div>
@@ -204,15 +256,21 @@ function Students({db,setDb,nav}){
           <button className="btn ghost" onClick={()=>setAdding(false)}>Cancelar</button>
           <button className="btn" onClick={add}>Salvar</button></div>
       </div></div>}
+    {menu && <RowMenu label="aluno" currentName={menu.name}
+      onRename={(novo)=>renameStudent(menu.id,novo)} onDelete={()=>deleteStudent(menu.id)}
+      onClose={()=>setMenu(null)}/>}
   </React.Fragment>);
 }
 function StudentDetail({db,setDb,nav,studentId,flash}){
   const s=db.students.find(x=>x.id===studentId);
   const [adding,setAdding]=useState(false);
   const [nome,setNome]=useState('');
+  const [menu,setMenu]=useState(null); // treino em edição
   if(!s) return null;
   const treinos=s.treinos||[];
   const updStudent=(patch)=>setDb({...db,students:db.students.map(x=>x.id===studentId?{...x,...patch}:x)});
+  const renameTreino=(id,novo)=>updStudent({treinos:treinos.map(t=>t.id===id?{...t,nome:novo}:t)});
+  const deleteTreino=(id)=>updStudent({treinos:treinos.filter(t=>t.id!==id)});
   const sugestaoNome='Treino '+String.fromCharCode(65+treinos.length);
   const addTreino=()=>{ updStudent({treinos:[...treinos,{id:uid(),nome:(nome.trim()||sugestaoNome),exercises:[]}]}); setNome('');setAdding(false); };
   return (<React.Fragment>
@@ -226,6 +284,7 @@ function StudentDetail({db,setDb,nav,studentId,flash}){
           <div className="tag">{letra}</div>
           <div className="meta"><div className="name">{t.nome}</div>
             <div className="desc">{(t.exercises||[]).length} {(t.exercises||[]).length===1?'exercício':'exercícios'}</div></div>
+          <button className="menudot" onClick={e=>{e.stopPropagation();setMenu(t);}}>⋯</button>
           <div className="chev" style={{color:'var(--muted)',fontSize:20}}>›</div>
         </div>);
       })}
@@ -240,6 +299,9 @@ function StudentDetail({db,setDb,nav,studentId,flash}){
           <button className="btn ghost" onClick={()=>setAdding(false)}>Cancelar</button>
           <button className="btn" onClick={addTreino}>Criar</button></div>
       </div></div>}
+    {menu && <RowMenu label="treino" currentName={menu.nome}
+      onRename={(novo)=>renameTreino(menu.id,novo)} onDelete={()=>deleteTreino(menu.id)}
+      onClose={()=>setMenu(null)}/>}
   </React.Fragment>);
 }
 function Scale({value,onChange,leftLabel,rightLabel}){
@@ -276,24 +338,38 @@ function ExerciseSheet({initial,onSave,onClose}){
         <button className="btn" onClick={save}>Salvar</button></div>
     </div></div>);
 }
-function RegisterSheet({exName,lastLog,onSave,onClose}){
-  const [carga,setCarga]=useState(lastLog?lastLog.carga:'');
-  const [intensidade,setInt]=useState(null);
-  const [dor,setDor]=useState(null);
+function RegisterSheet({exName,lastLog,editLog,onSave,onClose}){
+  const isEdit=!!editLog;
+  const [carga,setCarga]=useState(isEdit?(editLog.carga||''):(lastLog?lastLog.carga:''));
+  const [reps,setReps]=useState(isEdit?(editLog.reps||''):'');
+  const [intensidade,setInt]=useState(isEdit?(editLog.intensidade!=null?editLog.intensidade:null):null);
+  const [dor,setDor]=useState(isEdit?(editLog.dor!=null?editLog.dor:null):null);
+  const [erro,setErro]=useState('');
+  const save=()=>{
+    if(!carga.trim()){ setErro('Preencha a carga.'); return; }
+    if(!reps.trim()){ setErro('Preencha as repetições feitas.'); return; }
+    onSave({carga:carga.trim(),reps:reps.trim(),intensidade,dor});
+  };
   return (<div className="backdrop" onClick={onClose}>
     <div className="sheet" onClick={e=>e.stopPropagation()}>
-      <h2>Registrar hoje</h2><div className="h2sub">{exName}</div>
+      <h2>{isEdit?'Editar registro':'Registrar hoje'}</h2>
+      <div className="h2sub">{exName}{isEdit && ' · '+fmtDate(editLog.date)}</div>
       <div className="field"><label>Carga</label>
-        <input autoFocus value={carga} onChange={e=>setCarga(e.target.value)} placeholder="Ex: 40kg"/>
-        {lastLog && lastLog.carga && <div className="prefill">↩︎ Última: {lastLog.carga} ({fmtDate(lastLog.date)}) — ajuste se mudou</div>}
+        <input autoFocus value={carga} onChange={e=>{setCarga(e.target.value);setErro('');}} placeholder="Ex: 40kg"/>
+        {!isEdit && lastLog && lastLog.carga && <div className="prefill">↩︎ Última: {lastLog.carga} ({fmtDate(lastLog.date)}) — ajuste se mudou</div>}
+      </div>
+      <div className="field"><label>Repetições feitas (insira só o número)</label>
+        <input type="number" inputMode="numeric" value={reps} onChange={e=>{setReps(e.target.value);setErro('');}} placeholder="Ex: 10"/>
+        {!isEdit && lastLog && lastLog.reps && <div className="prefill">↩︎ Última: {lastLog.reps} reps</div>}
       </div>
       <div className="field"><label>Intensidade (esforço percebido nessa carga)</label>
         <Scale value={intensidade} onChange={setInt} leftLabel="Leve" rightLabel="Máxima"/></div>
       <div className="field"><label>Dor</label>
         <Scale value={dor} onChange={setDor} leftLabel="Sem dor" rightLabel="Dor forte"/></div>
+      {erro && <div style={{color:'var(--danger)',fontSize:13,marginBottom:12}}>{erro}</div>}
       <div className="sheetactions">
         <button className="btn ghost" onClick={onClose}>Cancelar</button>
-        <button className="btn" onClick={()=>onSave({carga:carga.trim(),intensidade,dor})}>Salvar registro</button></div>
+        <button className="btn" onClick={save}>{isEdit?'Salvar alterações':'Salvar registro'}</button></div>
     </div></div>);
 }
 function TreinoView({db,setDb,nav,studentId,treinoId,flash}){
@@ -315,6 +391,13 @@ function TreinoView({db,setDb,nav,studentId,treinoId,flash}){
     setEditingEx(null);
   };
   const delEx=(id)=>updExercises(t.exercises.filter(e=>e.id!==id));
+  const moveEx=(idx,dir)=>{
+    const arr=[...t.exercises];
+    const alvo=idx+dir;
+    if(alvo<0||alvo>=arr.length) return;
+    const tmp=arr[idx]; arr[idx]=arr[alvo]; arr[alvo]=tmp;
+    updExercises(arr);
+  };
   const saveLog=(data)=>{
     const ex=registering;
     const log={id:uid(),date:todayISO(),...data};
@@ -326,15 +409,25 @@ function TreinoView({db,setDb,nav,studentId,treinoId,flash}){
     <div className="screen">
       {(t.exercises||[]).length===0 && <div className="empty"><div className="big">＋</div>
         <p>Treino vazio. Toque em “+ Exercício” para montar. Depois, a cada aula, você só registra a carga.</p></div>}
-      {(t.exercises||[]).map(ex=>{
+      {(t.exercises||[]).map((ex,idx)=>{
         const last=lastLogOfExercise(s,ex.name);
+        const total=(t.exercises||[]).length;
         return (<div key={ex.id} className="exrow">
-          <div className="exname">{ex.name}</div>
-          {ex.series && <div className="exseries">{ex.series}</div>}
+          <div className="exhead">
+            <div className="reorder">
+              <button disabled={idx===0} onClick={()=>moveEx(idx,-1)} aria-label="Subir">▲</button>
+              <button disabled={idx===total-1} onClick={()=>moveEx(idx,1)} aria-label="Descer">▼</button>
+            </div>
+            <div className="exinfo">
+              <div className="exname">{ex.name}</div>
+              {ex.series && <div className="exseries">{ex.series}</div>}
+            </div>
+          </div>
           <div className="exlast">
             {last ? <React.Fragment>
               <span className="lastnote">Última carga · {fmtDate(last.date)}</span>
               <span className="pill big"><span className="k">Carga</span>{last.carga||'—'}</span>
+              {last.reps && <span className="pill big"><span className="k">Reps</span>{last.reps}</span>}
               {last.intensidade!=null && <span className="pill dot"><span className="swatch" style={{background:scaleColor(last.intensidade)}}></span><span className="k">Int</span>{last.intensidade}</span>}
               {last.dor!=null && <span className="pill dot"><span className="swatch" style={{background:scaleColor(last.dor)}}></span><span className="k">Dor</span>{last.dor}</span>}
             </React.Fragment> : <span className="lastnote">Ainda sem registro — toque em “Registrar hoje”.</span>}
@@ -356,11 +449,16 @@ function TreinoView({db,setDb,nav,studentId,treinoId,flash}){
 function Evolution({db,setDb,nav,studentId,exName,back,flash}){
   const s=db.students.find(x=>x.id===studentId);
   const RC=getRC();
+  const [editing,setEditing]=useState(null); // log em edição
   const entries=allLogsOfExercise(s,exName);
   const chartData=entries.map(e=>({date:fmtDate(e.date),carga:numFrom(e.carga),dor:e.dor})).filter(d=>d.carga!=null);
   const delLog=(logId)=>{
     setDb({...db,students:db.students.map(st=>st.id!==studentId?st:{...st,treinos:st.treinos.map(t=>({...t,exercises:t.exercises.map(ex=>norm(ex.name)===norm(exName)?{...ex,logs:(ex.logs||[]).filter(l=>l.id!==logId)}:ex)}))})});
     flash('Registro excluído');
+  };
+  const editLogSave=(logId,data)=>{
+    setDb({...db,students:db.students.map(st=>st.id!==studentId?st:{...st,treinos:st.treinos.map(t=>({...t,exercises:t.exercises.map(ex=>norm(ex.name)===norm(exName)?{...ex,logs:(ex.logs||[]).map(l=>l.id===logId?{...l,...data}:l)}:ex)}))})});
+    flash('Registro atualizado ✓'); setEditing(null);
   };
   let chart;
   if(RC && chartData.length>=2){
@@ -399,13 +497,17 @@ function Evolution({db,setDb,nav,studentId,exName,back,flash}){
           <div className="hdate">{fmtDate(e.date)}</div>
           <div className="hmeta">
             {e.carga && <span className="pill"><span className="k">Carga</span>{e.carga}</span>}
+            {e.reps && <span className="pill"><span className="k">Reps</span>{e.reps}</span>}
             {e.intensidade!=null && <span className="pill dot"><span className="swatch" style={{background:scaleColor(e.intensidade)}}></span>{e.intensidade}</span>}
             {e.dor!=null && <span className="pill dot"><span className="swatch" style={{background:scaleColor(e.dor)}}></span>Dor {e.dor}</span>}
           </div>
+          <button className="hedit" onClick={()=>setEditing(e)}>✎</button>
           <button className="hdel" onClick={()=>delLog(e.id)}>🗑</button>
         </div>))}
       {entries.length===0 && <div className="empty"><p>Nenhum registro desse exercício ainda.</p></div>}
     </div>
+    {editing && <RegisterSheet exName={exName} editLog={editing}
+      onSave={(data)=>editLogSave(editing.id,data)} onClose={()=>setEditing(null)}/>}
   </React.Fragment>);
 }
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
