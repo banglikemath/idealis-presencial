@@ -33,7 +33,7 @@
   ::placeholder{color:var(--muted)}
   .topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;
     padding:14px 16px;background:rgba(11,15,16,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
-  .topbar h1{font-size:17px;font-weight:600;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .topbar h1{font-size:17px;font-weight:600;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:130px}
   .topbar .sub{font-size:12px;color:var(--muted);font-weight:400}
   .iconbtn{width:40px;height:40px;display:grid;place-items:center;border-radius:12px;font-size:22px;color:var(--cyan);flex-shrink:0}
   .iconbtn:active{background:var(--surface-2)}
@@ -76,7 +76,8 @@
   .treino .meta{flex:1;min-width:0}
   .treino .meta .name{font-weight:600;font-size:16px}
   .treino .meta .desc{font-size:13px;color:var(--muted);margin-top:2px}
-  .exrow{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px}
+  .exrow{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;transition:.15s}
+  .exrow.done{background:rgba(221,255,0,.07);border-color:rgba(221,255,0,.5)}
   .exrow .exname{font-weight:600;font-size:16px;line-height:1.3}
   .exrow .exseries{display:inline-block;font-size:15px;color:var(--cyan-2);margin-top:6px;font-weight:600;letter-spacing:.2px;background:rgba(0,201,204,.10);border:1px solid rgba(0,201,204,.28);padding:3px 10px;border-radius:10px}
   .exrow .exlast{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
@@ -95,6 +96,12 @@
   .exactions .mini{flex:0 0 44px;color:var(--muted)}
   .exhead{display:flex;align-items:flex-start;gap:10px}
   .exhead .exinfo{flex:1;min-width:0}
+  .donecheck{flex-shrink:0;width:52px;min-height:52px;border-radius:12px;background:transparent;border:2px solid #ddff00;color:#0b0f10;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:.12s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:5px 2px}
+  .donecheck:active{transform:scale(.9)}
+  .donecheck.on{background:#ddff00;border-color:#ddff00}
+  .donecheck .dcicon{font-size:18px;font-weight:800;line-height:1;height:18px}
+  .donecheck .dclabel{font-family:inherit;font-size:11px;font-weight:700;color:#ddff00;line-height:1}
+  .donecheck.on .dclabel{color:#0b0f10}
   .reorder{display:flex;flex-direction:column;gap:4px;flex-shrink:0;margin-top:2px}
   .reorder button{width:34px;height:30px;border-radius:8px;display:grid;place-items:center;
     font-size:16px;background:var(--surface-2);border:1px solid var(--line);color:var(--cyan)}
@@ -106,12 +113,31 @@
   @keyframes up{from{transform:translateY(30px);opacity:.6}to{transform:none;opacity:1}}
   .sheet h2{margin:0 0 4px;font-size:18px;font-weight:600}
   .sheet .h2sub{font-size:13px;color:var(--muted);margin-bottom:16px}
+  .regeyebrow{font-size:12px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+  .regexname{margin:0 0 16px;font-size:24px;font-weight:700;line-height:1.15;color:var(--cyan-2)}
   .field{margin-bottom:14px}
   .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
   .field input,.field textarea{width:100%;padding:14px;background:var(--bg);border:1px solid var(--line);
     border-radius:12px;color:var(--text);font-size:16px;outline:none;resize:none}
   .field input:focus,.field textarea:focus{border-color:var(--cyan)}
   .prefill{font-size:12px;color:var(--cyan);margin-top:6px}
+  .bumpgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;margin-top:10px}
+  .bump{font-family:inherit;font-weight:700;font-size:15px;border-radius:12px;padding:16px 0;cursor:pointer;border:1px solid var(--line);background:var(--bg);-webkit-tap-highlight-color:transparent;transition:.1s}
+  .bump:active{transform:scale(.94)}
+  .bump.plus{color:var(--cyan);border-color:rgba(0,201,204,.35)}
+  .bump.minus{color:#ff9ba3;border-color:rgba(255,92,108,.28)}
+  .reprow{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;margin-top:10px}
+  .rpreset{font-family:inherit;font-weight:700;font-size:16px;padding:16px 0;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--text);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:.1s}
+  .rpreset:active{transform:scale(.94)}
+  .rpreset.sel{background:rgba(0,201,204,.14);border-color:var(--cyan);color:var(--cyan)}
+  .repbump{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:7px}
+  .pickgrid{display:grid;gap:7px}
+  .pickgrid.s6{grid-template-columns:repeat(7,1fr)}
+  .pickgrid.s3{grid-template-columns:repeat(3,1fr)}
+  .pcell{font-family:inherit;font-weight:600;font-size:15px;padding:14px 4px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--text);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:.1s;text-align:center}
+  .pcell:active{transform:scale(.94)}
+  .pcell.sel{background:rgba(0,201,204,.14);border-color:var(--cyan);color:var(--cyan)}
+  .pcell.more{color:var(--muted);font-size:13px}
   .autowrap{position:relative}
   .autolist{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:5;background:var(--surface-2);
     border:1px solid var(--line);border-radius:12px;overflow:hidden;max-height:220px;overflow-y:auto}
@@ -153,6 +179,24 @@
     font-weight:500;animation:fade .3s ease;max-width:90%;text-align:center}
   @keyframes fade{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1}}
   .warnbar{background:#3a2a10;color:#f1d94a;font-size:12px;text-align:center;padding:7px 12px;line-height:1.4}
+  .rttrigger{position:fixed;top:9px;right:12px;z-index:30;display:inline-flex;align-items:center;gap:5px;font-family:inherit;font-weight:600;font-size:13px;color:var(--cyan);background:rgba(0,201,204,.10);border:1px solid rgba(0,201,204,.35);border-radius:999px;padding:8px 13px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .syncbadge{position:fixed;left:12px;bottom:16px;z-index:40;font-family:inherit;font-weight:600;font-size:12px;border-radius:999px;padding:8px 13px;cursor:pointer;-webkit-tap-highlight-color:transparent;border:1px solid var(--line);background:var(--surface-2);color:var(--muted);box-shadow:0 4px 14px rgba(0,0,0,.35)}
+  .syncbadge:active{transform:scale(.96)}
+  .syncbadge.sending{color:var(--cyan-2);border-color:rgba(0,201,204,.4)}
+  .syncbadge.ok{color:#8fe388;border-color:rgba(143,227,136,.4)}
+  .syncbadge.off{color:var(--muted)}
+  .syncbadge.err{color:#ff9ba3;border-color:rgba(255,92,108,.4)}
+  .rttrigger:active{transform:scale(.95)}
+  .rtrunning{position:fixed;top:0;left:0;right:0;z-index:70;display:flex;align-items:center;justify-content:center;gap:12px;overflow:hidden;background:var(--surface-2);border-bottom:1px solid var(--cyan);padding:10px 16px;cursor:pointer}
+  .rtrunning .rtbar{position:absolute;left:0;top:0;bottom:0;background:rgba(0,201,204,.16);transition:width 1s linear;z-index:0}
+  .rtrunning .rtclock{position:relative;z-index:1;font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--cyan-2)}
+  .rtrunning .rtcancel{position:relative;z-index:1;font-size:11px;font-weight:500;color:var(--muted)}
+  .rtsheet-backdrop{position:fixed;inset:0;z-index:75;background:rgba(0,0,0,.5);display:flex;align-items:flex-end}
+  .rtsheet{width:100%;background:var(--surface);border-top:1px solid var(--line);border-radius:20px 20px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom))}
+  .rtsheet-title{font-size:15px;font-weight:600;color:var(--muted);margin-bottom:14px;text-align:center}
+  .rtpresets{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+  .rtpreset{font-family:inherit;font-weight:700;font-size:17px;color:var(--cyan);background:var(--bg);border:1px solid rgba(0,201,204,.35);border-radius:14px;padding:18px 0;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:.1s}
+  .rtpreset:active{transform:scale(.93);background:rgba(0,201,204,.12)}
 </style>
 </head>
 <body>
@@ -177,13 +221,160 @@ const numFrom=(c)=>{const m=(c||'').replace(',','.').match(/[\d.]+/);return m?pa
 function allLogsOfExercise(student, exName){ const out=[]; (student.treinos||[]).forEach(t=>(t.exercises||[]).forEach(ex=>{ if(norm(ex.name)===norm(exName))(ex.logs||[]).forEach(l=>out.push(l)); })); return out.sort((a,b)=>a.date.localeCompare(b.date)); }
 function lastLogOfExercise(student, exName){ const logs=allLogsOfExercise(student,exName); return logs.length?logs[logs.length-1]:null; }
 
+/* ===== SYNC (backup só-ida para Google Sheets via Apps Script) ===== */
+const SYNC_URL = 'https://script.google.com/macros/s/AKfycbxl0TnXNC_P4rsGYGWtkICy4T-3a2TEz8KmHbDTbgh4X24WoWnJB9lFABctI1dsnxVBfA/exec';
+const QUEUE_KEY = 'idealis_presencial_fila_v1';
+const SYNCMETA_KEY = 'idealis_presencial_syncmeta_v1';
+const ESTRUTURA_DIRTY_KEY = 'idealis_presencial_estrutura_dirty_v1';
+/* monta o snapshot da estrutura SEM o check efêmero "doneDate" */
+function buildEstruturaSnapshot(db){
+  return {
+    exportado_em: new Date().toISOString(),
+    students: (db.students||[]).map(s=>({
+      id:s.id, name:s.name,
+      treinos:(s.treinos||[]).map(t=>({
+        id:t.id, nome:t.nome,
+        exercises:(t.exercises||[]).map(ex=>({
+          id:ex.id, name:ex.name, series:ex.series,
+          logs:(ex.logs||[]).map(l=>({id:l.id,date:l.date,carga:l.carga,reps:l.reps,intensidade:l.intensidade,dor:l.dor}))
+          // doneDate propositalmente omitido (efêmero do dia)
+        }))
+      }))
+    }))
+  };
+}
+function loadQueue(){ if(!LS_OK) return []; try{const r=window.localStorage.getItem(QUEUE_KEY);return r?JSON.parse(r):[];}catch(e){return [];} }
+function saveQueue(q){ if(!LS_OK)return; try{window.localStorage.setItem(QUEUE_KEY,JSON.stringify(q));}catch(e){} }
+function loadSyncMeta(){ if(!LS_OK) return {last:null}; try{const r=window.localStorage.getItem(SYNCMETA_KEY);return r?JSON.parse(r):{last:null};}catch(e){return {last:null};} }
+function saveSyncMeta(m){ if(!LS_OK)return; try{window.localStorage.setItem(SYNCMETA_KEY,JSON.stringify(m));}catch(e){} }
+/* monta um registro achatado (1 linha na planilha) a partir do contexto */
+function enqueueLog({log, alunoNome, treinoNome, exNome}){
+  const q=loadQueue();
+  const reg={ id:log.id, data:log.date, aluno:alunoNome, treino:treinoNome, exercicio:exNome,
+    carga:log.carga, reps:log.reps, intensidade:log.intensidade, dor:log.dor };
+  // se já existe na fila (edição), substitui pelo id; senão adiciona
+  const i=q.findIndex(r=>r.id===reg.id);
+  if(i>=0) q[i]=reg; else q.push(reg);
+  saveQueue(q);
+}
+/* envia a fila inteira; só remove o que confirmou. Retorna {ok, enviados, erro?} */
+async function flushQueue(estruturaSnapshot){
+  const q=loadQueue();
+  const estruturaSuja = window.localStorage.getItem(ESTRUTURA_DIRTY_KEY)==='1';
+  if(!q.length && !estruturaSuja) return {ok:true, enviados:0, vazia:true};
+  if(!navigator.onLine) return {ok:false, enviados:0, offline:true};
+  try{
+    const payload={action:'registros', registros:q};
+    if(estruturaSuja && estruturaSnapshot) payload.estrutura=estruturaSnapshot;
+    const resp=await fetch(SYNC_URL,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'}, // evita preflight CORS
+      body:JSON.stringify(payload)
+    });
+    const out=await resp.json();
+    if(out && out.ok){
+      const atual=loadQueue();
+      const idsEnviados=new Set(q.map(r=>r.id));
+      saveQueue(atual.filter(r=>!idsEnviados.has(r.id))); // preserva itens novos que entraram durante o envio
+      if(payload.estrutura) window.localStorage.setItem(ESTRUTURA_DIRTY_KEY,'0'); // estrutura subiu, limpa flag
+      const meta=loadSyncMeta(); meta.last=new Date().toISOString(); saveSyncMeta(meta);
+      return {ok:true, enviados:q.length, estruturaEnviada:!!payload.estrutura};
+    }
+    return {ok:false, enviados:0, erro:(out&&out.erro)||'resposta_invalida'};
+  }catch(err){
+    return {ok:false, enviados:0, erro:String(err)};
+  }
+}
+
+
+function useRestTimer(){
+  const [open,setOpen]=useState(false);
+  const [running,setRunning]=useState(false);
+  const [remaining,setRemaining]=useState(0);
+  const [total,setTotal]=useState(0);
+  useEffect(()=>{
+    if(!running) return;
+    if(remaining<=0){
+      setRunning(false);
+      if(navigator.vibrate) navigator.vibrate([300,120,300]);
+      return;
+    }
+    const id=setTimeout(()=>setRemaining(r=>r-1),1000);
+    return ()=>clearTimeout(id);
+  },[running,remaining]);
+  const start=(s)=>{ setTotal(s); setRemaining(s); setRunning(true); setOpen(false); };
+  const cancel=()=>{ setRunning(false); setRemaining(0); setTotal(0); };
+  return {open,setOpen,running,remaining,total,start,cancel};
+}
+function RestTimerTrigger({timer}){
+  return (<button className="rttrigger" onClick={()=>timer.setOpen(o=>!o)}>
+    ⏱️ Contar descanso
+  </button>);
+}
+function RestTimerOverlay({timer}){
+  const {open,setOpen,running,remaining,total,start,cancel}=timer;
+  const presets=[30,45,60,75,90];
+  const mmss=(s)=>{ const m=Math.floor(s/60), sec=s%60; return m>0?`${m}:${String(sec).padStart(2,'0')}`:`${sec}"`; };
+  const pct = total>0 ? (remaining/total)*100 : 0;
+  return (<React.Fragment>
+    {running && <div className="rtrunning" onClick={cancel}>
+      <div className="rtbar" style={{width:pct+'%'}}></div>
+      <span className="rtclock">⏱️ {mmss(remaining)}</span>
+      <span className="rtcancel">tocar p/ parar</span>
+    </div>}
+    {open && !running && <div className="rtsheet-backdrop" onClick={()=>setOpen(false)}>
+      <div className="rtsheet" onClick={e=>e.stopPropagation()}>
+        <div className="rtsheet-title">Tempo de descanso</div>
+        <div className="rtpresets">
+          {presets.map(s=>(
+            <button key={s} className="rtpreset" onClick={()=>start(s)}>{s}"</button>
+          ))}
+        </div>
+      </div>
+    </div>}
+  </React.Fragment>);
+}
 function App(){
   const [db,setDb]=useState(loadDB);
   const [view,setView]=useState({name:'students'});
   const [toast,setToast]=useState(null);
-  useEffect(()=>saveDB(db),[db]);
+  const [sync,setSync]=useState({state:'idle', pend:loadQueue().length, last:loadSyncMeta().last});
+  const timer=useRestTimer();
+  const prevStructRef=React.useRef(null);
+  useEffect(()=>{
+    saveDB(db);
+    // detecta mudança estrutural (ignora o check "doneDate", que é efêmero)
+    const snap=JSON.stringify(buildEstruturaSnapshot(db));
+    if(prevStructRef.current!==null && prevStructRef.current!==snap){
+      try{ window.localStorage.setItem(ESTRUTURA_DIRTY_KEY,'1'); }catch(e){}
+      if(window.__triggerSync) window.__triggerSync();
+    }
+    prevStructRef.current=snap;
+  },[db]);
   const flash=(m)=>{setToast(m);setTimeout(()=>setToast(null),1600);};
   const nav=(v)=>setView(v);
+
+  // motor de sincronização (backup só-ida)
+  const doSync=React.useCallback(async ()=>{
+    const pend=loadQueue().length;
+    const suja=window.localStorage.getItem(ESTRUTURA_DIRTY_KEY)==='1';
+    if(pend===0 && !suja){ setSync(s=>({...s,state:'idle',pend:0,last:loadSyncMeta().last})); return; }
+    if(!navigator.onLine){ setSync(s=>({...s,state:'offline',pend})); return; }
+    setSync(s=>({...s,state:'sending',pend}));
+    const r=await flushQueue(buildEstruturaSnapshot(loadDB()));
+    if(r.ok){ setSync({state:'ok', pend:loadQueue().length, last:loadSyncMeta().last}); }
+    else if(r.offline){ setSync(s=>({...s,state:'offline',pend:loadQueue().length})); }
+    else { setSync(s=>({...s,state:'error',pend:loadQueue().length})); }
+  },[]);
+  useEffect(()=>{
+    window.__triggerSync=()=>{ setSync(s=>({...s,pend:loadQueue().length})); doSync(); };
+    doSync(); // tenta esvaziar fila ao abrir
+    const onOnline=()=>doSync();
+    window.addEventListener('online',onOnline);
+    const iv=setInterval(()=>{ if(loadQueue().length>0 || window.localStorage.getItem(ESTRUTURA_DIRTY_KEY)==='1') doSync(); },60000); // reforço a cada 60s
+    return ()=>{ window.removeEventListener('online',onOnline); clearInterval(iv); delete window.__triggerSync; };
+  },[doSync]);
+
   let screen;
   if(view.name==='students') screen=<Students db={db} setDb={setDb} nav={nav}/>;
   else if(view.name==='student') screen=<StudentDetail db={db} setDb={setDb} nav={nav} studentId={view.studentId} flash={flash}/>;
@@ -192,8 +383,23 @@ function App(){
   return (<React.Fragment>
     {!LS_OK && <div className="warnbar">⚠️ Modo temporário: os dados somem ao fechar. Abra pelo link do GitHub Pages para salvar.</div>}
     {screen}
+    <SyncBadge sync={sync} onRetry={doSync}/>
+    <RestTimerTrigger timer={timer}/>
+    <RestTimerOverlay timer={timer}/>
     {toast && <div className="toast">{toast}</div>}
   </React.Fragment>);
+}
+function SyncBadge({sync,onRetry}){
+  const {state,pend}=sync;
+  if(state==='idle' && pend===0) return null; // nada pendente, não polui
+  let txt,cls;
+  if(state==='sending'){ txt='Salvando na planilha…'; cls='sending'; }
+  else if(state==='ok' && pend===0){ txt='Backup salvo ✓'; cls='ok'; }
+  else if(state==='offline'){ txt=pend+' p/ enviar (offline)'; cls='off'; }
+  else if(state==='error'){ txt=pend+' p/ enviar · tocar p/ tentar'; cls='err'; }
+  else if(pend>0){ txt=pend+' p/ enviar'; cls='off'; }
+  else return null;
+  return <button className={'syncbadge '+cls} onClick={onRetry}>{txt}</button>;
 }
 function TopBar({title,sub,onBack}){
   return (<div className="topbar">
@@ -327,14 +533,30 @@ function Scale({value,onChange,leftLabel,rightLabel}){
 }
 function ExerciseSheet({initial,onSave,onClose}){
   const [name,setName]=useState(initial?initial.name:'');
-  const [series,setSeries]=useState(initial?initial.series:'');
   const [showAuto,setShowAuto]=useState(false);
+  const repOpts=['4 a 6','6 a 8','6 a 10','8 a 10','8 a 12','10 a 12','10 a 15','12 a 15','15 a 20'];
+  // tenta separar "3 × 8 a 12" -> sets "3", reps "8 a 12"
+  const parseInit=()=>{
+    const s=(initial&&initial.series)?String(initial.series):'';
+    const m=s.match(/^\s*(\d+)\s*[x×]\s*(.+)$/i);
+    if(m){ return {sets:m[1], reps:m[2].trim()}; }
+    return {sets:'', reps:''};
+  };
+  const init=parseInit();
+  const [sets,setSets]=useState(init.sets);
+  const [reps,setReps]=useState(init.reps);
+  const [setsManual,setSetsManual]=useState(false);
+  const [repsManual,setRepsManual]=useState(false);
   const sugestoes = name.trim().length>=2 ? CATALOGO_EXEMPLO.filter(e=>e.toLowerCase().includes(name.toLowerCase()) && e.toLowerCase()!==name.toLowerCase()).slice(0,5) : [];
-  const save=()=>{ if(!name.trim())return; onSave({name:name.trim(),series:series.trim()}); };
+  const save=()=>{
+    if(!name.trim())return;
+    const combined = (sets.trim()&&reps.trim()) ? `${sets.trim()} × ${reps.trim()}` : (sets.trim()||reps.trim()||'');
+    onSave({name:name.trim(),series:combined});
+  };
   return (<div className="backdrop" onClick={onClose}>
     <div className="sheet" onClick={e=>e.stopPropagation()}>
       <h2>{initial?'Editar exercício':'Novo exercício'}</h2>
-      <div className="h2sub">Nome e séries ficam fixos no treino. A carga você registra a cada aula.</div>
+      <div className="h2sub">Nome, séries e repetições ficam fixos no treino. A carga você registra a cada aula.</div>
       <div className="field autowrap"><label>Exercício</label>
         <input autoFocus value={name} onChange={e=>{setName(e.target.value);setShowAuto(true);}} onFocus={()=>setShowAuto(true)} placeholder="Ex: Supino Reto"/>
         {showAuto && sugestoes.length>0 && <div className="autolist">
@@ -343,7 +565,25 @@ function ExerciseSheet({initial,onSave,onClose}){
         </div>}
       </div>
       <div className="field"><label>Séries</label>
-        <input value={series} onChange={e=>setSeries(e.target.value)} placeholder="Ex: 4x12 + Isometria"/></div>
+        {setsManual
+          ? <input value={sets} inputMode="numeric" onChange={e=>setSets(e.target.value)} onBlur={()=>setSetsManual(false)} placeholder="Nº de séries" autoFocus/>
+          : <div className="pickgrid s6">
+              {[1,2,3,4,5,6].map(n=>(
+                <button type="button" key={n} className={'pcell'+(String(n)===String(sets)?' sel':'')} onClick={()=>setSets(String(n))}>{n}</button>
+              ))}
+              <button type="button" className="pcell more" onClick={()=>setSetsManual(true)}>⌨</button>
+            </div>}
+      </div>
+      <div className="field"><label>Repetições</label>
+        {repsManual
+          ? <input value={reps} onChange={e=>setReps(e.target.value)} onBlur={()=>setRepsManual(false)} placeholder="Ex: 8 a 12" autoFocus/>
+          : <div className="pickgrid s3">
+              {repOpts.map(r=>(
+                <button type="button" key={r} className={'pcell'+(r===reps?' sel':'')} onClick={()=>setReps(r)}>{r}</button>
+              ))}
+              <button type="button" className="pcell more" onClick={()=>setRepsManual(true)}>⌨ digitar</button>
+            </div>}
+      </div>
       <div className="sheetactions">
         <button className="btn ghost" onClick={onClose}>Cancelar</button>
         <button className="btn" onClick={save}>Salvar</button></div>
@@ -356,21 +596,70 @@ function RegisterSheet({exName,lastLog,editLog,onSave,onClose}){
   const [intensidade,setInt]=useState(isEdit?(editLog.intensidade!=null?editLog.intensidade:null):null);
   const [dor,setDor]=useState(isEdit?(editLog.dor!=null?editLog.dor:null):null);
   const [erro,setErro]=useState('');
+  // separa número e sufixo (ex "40kg" -> 40 + "kg"); preserva unidade ao operar
+  const parseCarga=(str)=>{
+    const s=String(str||'').replace(',','.');
+    const mNum=s.match(/-?\d+(\.\d+)?/);
+    const num=mNum?parseFloat(mNum[0]):null;
+    const suf=s.replace(/-?\d+(\.\d+)?/,'').trim();
+    return {num,suf};
+  };
+  const fmtNum=(n)=>{ // 40 -> "40", 42.5 -> "42,5"
+    if(n==null) return '';
+    const r=Math.round(n*10)/10;
+    return (Number.isInteger(r)?String(r):String(r).replace('.',',')).toString();
+  };
+  const setNum=(n,keepSuf)=>{
+    const cur=parseCarga(carga);
+    const suf=keepSuf!=null?keepSuf:(cur.suf||'kg');
+    const val=n<0?0:n;
+    setCarga(fmtNum(val)+(suf?suf:'')); setErro('');
+  };
+  const bump=(d)=>{
+    const cur=parseCarga(carga);
+    const base=cur.num!=null?cur.num:0;
+    setNum(base+d, cur.suf||'kg');
+  };
   const save=()=>{
     if(!carga.trim()){ setErro('Preencha a carga.'); return; }
     if(!reps.trim()){ setErro('Preencha as repetições feitas.'); return; }
     onSave({carga:carga.trim(),reps:reps.trim(),intensidade,dor});
   };
+  const setRepsVal=(n)=>{ setReps(String(n<0?0:n)); setErro(''); };
+  const bumpReps=(d)=>{ const cur=parseInt(reps,10); setRepsVal((isNaN(cur)?0:cur)+d); };
+  const repPresets=[6,8,10,12,15,20];
   return (<div className="backdrop" onClick={onClose}>
     <div className="sheet" onClick={e=>e.stopPropagation()}>
-      <h2>{isEdit?'Editar registro':'Registrar hoje'}</h2>
-      <div className="h2sub">{exName}{isEdit && ' · '+fmtDate(editLog.date)}</div>
+      <div className="regeyebrow">{isEdit?'Editar registro':'Registrar hoje'}{isEdit && ' · '+fmtDate(editLog.date)}</div>
+      <h2 className="regexname">{exName}</h2>
       <div className="field"><label>Carga</label>
-        <input autoFocus value={carga} onChange={e=>{setCarga(e.target.value);setErro('');}} placeholder="Ex: 40kg"/>
+        <input value={carga} inputMode="decimal" onChange={e=>{setCarga(e.target.value);setErro('');}} placeholder="Ex: 40kg"/>
+        <div className="reprow">
+          {[10,20,40,50,80,100].map(v=>(
+            <button type="button" key={v} className={'rpreset'+(parseCarga(carga).num===v?' sel':'')} onClick={()=>setNum(v)}>{v}</button>
+          ))}
+        </div>
+        <div className="bumpgrid">
+          <button type="button" className="bump minus" onClick={()=>bump(-5)}>−5</button>
+          <button type="button" className="bump minus" onClick={()=>bump(-2.5)}>−2,5</button>
+          <button type="button" className="bump minus" onClick={()=>bump(-1)}>−1</button>
+          <button type="button" className="bump plus" onClick={()=>bump(1)}>+1</button>
+          <button type="button" className="bump plus" onClick={()=>bump(2.5)}>+2,5</button>
+          <button type="button" className="bump plus" onClick={()=>bump(5)}>+5</button>
+        </div>
         {!isEdit && lastLog && lastLog.carga && <div className="prefill">↩︎ Última: {lastLog.carga} ({fmtDate(lastLog.date)}) — ajuste se mudou</div>}
       </div>
       <div className="field"><label>Repetições feitas (insira só o número)</label>
         <input type="number" inputMode="numeric" value={reps} onChange={e=>{setReps(e.target.value);setErro('');}} placeholder="Ex: 10"/>
+        <div className="reprow">
+          {repPresets.map(v=>(
+            <button type="button" key={v} className={'rpreset'+(String(v)===String(reps)?' sel':'')} onClick={()=>setRepsVal(v)}>{v}</button>
+          ))}
+        </div>
+        <div className="repbump">
+          <button type="button" className="bump minus" onClick={()=>bumpReps(-1)}>−1</button>
+          <button type="button" className="bump plus" onClick={()=>bumpReps(1)}>+1</button>
+        </div>
         {!isEdit && lastLog && lastLog.reps && <div className="prefill">↩︎ Última: {lastLog.reps} reps</div>}
       </div>
       <div className="field"><label>Intensidade (esforço percebido nessa carga)</label>
@@ -402,6 +691,11 @@ function TreinoView({db,setDb,nav,studentId,treinoId,flash}){
     setEditingEx(null);
   };
   const delEx=(id)=>updExercises(t.exercises.filter(e=>e.id!==id));
+  const toggleDone=(id)=>updExercises(t.exercises.map(e=>{
+    if(e.id!==id) return e;
+    const isToday = e.doneDate===todayISO();
+    return {...e, doneDate: isToday ? null : todayISO()};
+  }));
   const moveEx=(idx,dir)=>{
     const arr=[...t.exercises];
     const alvo=idx+dir;
@@ -413,6 +707,8 @@ function TreinoView({db,setDb,nav,studentId,treinoId,flash}){
     const ex=registering;
     const log={id:uid(),date:todayISO(),...data};
     updExercises(t.exercises.map(e=>e.id===ex.id?{...e,logs:[...(e.logs||[]),log]}:e));
+    enqueueLog({log, alunoNome:s.name, treinoNome:t.nome, exNome:ex.name});
+    if(window.__triggerSync) window.__triggerSync();
     flash('Carga registrada ✓'); setRegistering(null);
   };
   return (<React.Fragment>
@@ -423,7 +719,8 @@ function TreinoView({db,setDb,nav,studentId,treinoId,flash}){
       {(t.exercises||[]).map((ex,idx)=>{
         const last=lastLogOfExercise(s,ex.name);
         const total=(t.exercises||[]).length;
-        return (<div key={ex.id} className="exrow">
+        const done = ex.doneDate===todayISO();
+        return (<div key={ex.id} className={'exrow'+(done?' done':'')}>
           <div className="exhead">
             <div className="reorder">
               <button disabled={idx===0} onClick={()=>moveEx(idx,-1)} aria-label="Subir">▲</button>
@@ -433,6 +730,10 @@ function TreinoView({db,setDb,nav,studentId,treinoId,flash}){
               <div className="exname">{ex.name}</div>
               {ex.series && <div className="exseries">{ex.series}</div>}
             </div>
+            <button className={'donecheck'+(done?' on':'')} onClick={()=>toggleDone(ex.id)} aria-label={done?'Marcar como não feito':'Marcar como feito'}>
+              <span className="dcicon">{done?'✓':''}</span>
+              <span className="dclabel">Feito</span>
+            </button>
           </div>
           <div className="exlast">
             {last ? <React.Fragment>
@@ -475,6 +776,12 @@ function Evolution({db,setDb,nav,studentId,exName,back,flash}){
   };
   const editLogSave=(logId,data)=>{
     setDb({...db,students:db.students.map(st=>st.id!==studentId?st:{...st,treinos:st.treinos.map(t=>({...t,exercises:t.exercises.map(ex=>norm(ex.name)===norm(exName)?{...ex,logs:(ex.logs||[]).map(l=>l.id===logId?{...l,...data}:l)}:ex)}))})});
+    // acha o treino que contém esse exercício, pra montar o registro de backup
+    let treinoNome='';
+    (s.treinos||[]).forEach(t=>(t.exercises||[]).forEach(ex=>{ if(norm(ex.name)===norm(exName)) treinoNome=t.nome; }));
+    const orig=(entries||[]).find(l=>l.id===logId)||{};
+    enqueueLog({log:{id:logId, date:orig.date||todayISO(), ...data}, alunoNome:s.name, treinoNome, exNome:exName});
+    if(window.__triggerSync) window.__triggerSync();
     flash('Registro atualizado ✓'); setEditing(null);
   };
   let chart;
