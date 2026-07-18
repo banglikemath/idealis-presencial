@@ -145,6 +145,15 @@
   .autolist div.opt:last-child{border-bottom:none}
   .autolist div.opt:active{background:var(--line)}
   .autolist .hint{font-size:11px;color:var(--muted);padding:8px 14px}
+  .autolist div.opt{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .autolist .optgrp{font-size:11px;color:var(--muted);flex-shrink:0}
+  .vinculado{font-size:12px;color:#8fe388;margin-top:6px;font-weight:600}
+  .catrow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:16px;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)}
+  .catinfo{font-size:12px;color:var(--muted)}
+  .catwhen{opacity:.7}
+  .catbtn{flex-shrink:0;font-family:inherit;font-size:13px;font-weight:600;color:var(--cyan);background:rgba(0,201,204,.10);border:1px solid rgba(0,201,204,.35);border-radius:10px;padding:8px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .catbtn:active{transform:scale(.96)}
+  .catbtn:disabled{opacity:.6}
   .scale{display:flex;gap:5px;flex-wrap:wrap}
   .scale button{flex:1;min-width:calc(9% - 5px);aspect-ratio:1;border-radius:9px;font-size:14px;font-weight:600;
     background:var(--surface-2);border:1px solid var(--line);color:var(--muted)}
@@ -218,8 +227,41 @@ const norm = (t)=>(t||'').trim().toLowerCase();
 const CATALOGO_EXEMPLO = ['Supino Reto','Supino Inclinado','Remada Baixa Anatômica','Puxada Frontal','Agachamento Livre','Leg Press','Cadeira Extensora','Mesa Flexora','Desenvolvimento Militar','Elevação Lateral','Rosca Direta','Tríceps Corda','Stiff','Panturrilha em Pé','Abdominal Infra','Prancha Isométrica'];
 function scaleColor(v){ if(v==null)return 'var(--line)'; if(v<=3)return 'var(--green)'; if(v<=6)return 'var(--yellow)'; if(v<=8)return 'var(--orange)'; return 'var(--red)'; }
 const numFrom=(c)=>{const m=(c||'').replace(',','.').match(/[\d.]+/);return m?parseFloat(m[0]):null;};
-function allLogsOfExercise(student, exName){ const out=[]; (student.treinos||[]).forEach(t=>(t.exercises||[]).forEach(ex=>{ if(norm(ex.name)===norm(exName))(ex.logs||[]).forEach(l=>out.push(l)); })); return out.sort((a,b)=>a.date.localeCompare(b.date)); }
-function lastLogOfExercise(student, exName){ const logs=allLogsOfExercise(student,exName); return logs.length?logs[logs.length-1]:null; }
+function allLogsOfExercise(student, exName, exId){
+  const out=[];
+  (student.treinos||[]).forEach(t=>(t.exercises||[]).forEach(ex=>{
+    // casa por exerciseId quando ambos têm; senão, cai no nome normalizado
+    const bate = (exId!=null && ex.exerciseId!=null) ? (ex.exerciseId===exId) : (norm(ex.name)===norm(exName));
+    if(bate)(ex.logs||[]).forEach(l=>out.push(l));
+  }));
+  return out.sort((a,b)=>a.date.localeCompare(b.date));
+}
+function lastLogOfExercise(student, exName, exId){ const logs=allLogsOfExercise(student,exName,exId); return logs.length?logs[logs.length-1]:null; }
+
+/* ===== CATÁLOGO (Cardápio WTDN — leitura com cache offline) ===== */
+const CARDAPIO_URL = 'https://script.google.com/macros/s/AKfycbyi183noK7vugBRyh5AMMcgey2Ksz2oqQvKGAfZ8Q-ZcJU0ag4TxzuiAS6oDP0u3BI7/exec';
+const CATALOGO_KEY = 'idealis_presencial_catalogo_v1';
+const CATALOGO_META_KEY = 'idealis_presencial_catalogo_meta_v1';
+function loadCatalogo(){ if(!LS_OK) return []; try{const r=window.localStorage.getItem(CATALOGO_KEY);return r?JSON.parse(r):[];}catch(e){return [];} }
+function saveCatalogo(lista){ if(!LS_OK)return; try{window.localStorage.setItem(CATALOGO_KEY,JSON.stringify(lista));window.localStorage.setItem(CATALOGO_META_KEY,JSON.stringify({atualizado:new Date().toISOString(),total:lista.length}));}catch(e){} }
+function loadCatalogoMeta(){ if(!LS_OK) return null; try{const r=window.localStorage.getItem(CATALOGO_META_KEY);return r?JSON.parse(r):null;}catch(e){return null;} }
+/* baixa a lista do Cardápio e cacheia. Retorna {ok, total} ou {ok:false, erro} */
+async function fetchCatalogo(){
+  if(!navigator.onLine) return {ok:false, offline:true};
+  try{
+    const resp=await fetch(CARDAPIO_URL,{method:'GET'});
+    const out=await resp.json();
+    if(out && out.ok && Array.isArray(out.exercicios)){
+      const lista=out.exercicios.map(e=>({id:e.id, nome:e.exercicio, grupo:e.grupo||''}))
+        .filter(e=>e.id!=null && e.nome);
+      saveCatalogo(lista);
+      return {ok:true, total:lista.length};
+    }
+    return {ok:false, erro:'formato_inesperado'};
+  }catch(err){
+    return {ok:false, erro:String(err)};
+  }
+}
 
 /* ===== SYNC (backup só-ida para Google Sheets via Apps Script) ===== */
 const SYNC_URL = 'https://script.google.com/macros/s/AKfycbxl0TnXNC_P4rsGYGWtkICy4T-3a2TEz8KmHbDTbgh4X24WoWnJB9lFABctI1dsnxVBfA/exec';
@@ -368,6 +410,8 @@ function App(){
   useEffect(()=>{
     window.__triggerSync=()=>{ setSync(s=>({...s,pend:loadQueue().length})); doSync(); };
     doSync(); // tenta esvaziar fila ao abrir
+    // baixa o catálogo do Cardápio na 1ª vez (cache offline); atualiza silencioso se online
+    if(loadCatalogo().length===0){ fetchCatalogo(); }
     const onOnline=()=>doSync();
     window.addEventListener('online',onOnline);
     const iv=setInterval(()=>{ if(loadQueue().length>0 || window.localStorage.getItem(ESTRUTURA_DIRTY_KEY)==='1') doSync(); },60000); // reforço a cada 60s
@@ -378,7 +422,7 @@ function App(){
   if(view.name==='students') screen=<Students db={db} setDb={setDb} nav={nav}/>;
   else if(view.name==='student') screen=<StudentDetail db={db} setDb={setDb} nav={nav} studentId={view.studentId} flash={flash}/>;
   else if(view.name==='treino') screen=<TreinoView db={db} setDb={setDb} nav={nav} studentId={view.studentId} treinoId={view.treinoId} flash={flash}/>;
-  else if(view.name==='evolution') screen=<Evolution db={db} setDb={setDb} nav={nav} studentId={view.studentId} exName={view.exName} back={view.back} flash={flash}/>;
+  else if(view.name==='evolution') screen=<Evolution db={db} setDb={setDb} nav={nav} studentId={view.studentId} exName={view.exName} exId={view.exId} back={view.back} flash={flash}/>;
   return (<React.Fragment>
     {!LS_OK && <div className="warnbar">⚠️ Modo temporário: os dados somem ao fechar. Abra pelo link do GitHub Pages para salvar.</div>}
     {screen}
@@ -443,6 +487,16 @@ function Students({db,setDb,nav}){
   const [adding,setAdding]=useState(false);
   const [name,setName]=useState('');
   const [menu,setMenu]=useState(null); // aluno em edição
+  const [catStatus,setCatStatus]=useState('');
+  const catMeta=loadCatalogoMeta();
+  const atualizarCatalogo=async ()=>{
+    setCatStatus('baixando');
+    const r=await fetchCatalogo();
+    if(r.ok) setCatStatus('ok:'+r.total);
+    else if(r.offline) setCatStatus('offline');
+    else setCatStatus('erro');
+    setTimeout(()=>setCatStatus(''),4000);
+  };
   const list=db.students.filter(s=>s.name.toLowerCase().includes(q.toLowerCase()));
   const add=()=>{ if(!name.trim())return; setDb({...db,students:[...db.students,{id:uid(),name:name.trim(),treinos:[]}]}); setName('');setAdding(false); };
   const renameStudent=(id,novo)=>setDb({...db,students:db.students.map(x=>x.id===id?{...x,name:novo}:x)});
@@ -461,6 +515,15 @@ function Students({db,setDb,nav}){
           <button className="menudot" onClick={e=>{e.stopPropagation();setMenu(s);}}>⋯</button>
           <div className="chev">›</div>
         </div>))}
+      <div className="catrow">
+        <div className="catinfo">
+          🔗 Cardápio: {catMeta?`${catMeta.total} exercícios`:'não baixado'}
+          {catMeta && <span className="catwhen"> · {fmtDate(catMeta.atualizado.slice(0,10))}</span>}
+        </div>
+        <button className="catbtn" onClick={atualizarCatalogo} disabled={catStatus==='baixando'}>
+          {catStatus==='baixando'?'Baixando…':catStatus.startsWith('ok:')?('✓ '+catStatus.slice(3)):catStatus==='offline'?'Sem internet':catStatus==='erro'?'Erro — tentar':'Atualizar'}
+        </button>
+      </div>
     </div>
     <button className="fab" onClick={()=>setAdding(true)}>＋ Aluno</button>
     {adding && <div className="backdrop" onClick={()=>setAdding(false)}>
@@ -532,9 +595,10 @@ function Scale({value,onChange,leftLabel,rightLabel}){
 }
 function ExerciseSheet({initial,onSave,onClose}){
   const [name,setName]=useState(initial?initial.name:'');
+  const [exerciseId,setExerciseId]=useState(initial&&initial.exerciseId!=null?initial.exerciseId:null);
   const [showAuto,setShowAuto]=useState(false);
+  const catalogo=React.useMemo(()=>loadCatalogo(),[]);
   const repOpts=['4 a 6','6 a 8','6 a 10','8 a 10','8 a 12','10 a 12','10 a 15','12 a 15','15 a 20'];
-  // tenta separar "3 × 8 a 12" -> sets "3", reps "8 a 12"
   const parseInit=()=>{
     const s=(initial&&initial.series)?String(initial.series):'';
     const m=s.match(/^\s*(\d+)\s*[x×]\s*(.+)$/i);
@@ -546,22 +610,34 @@ function ExerciseSheet({initial,onSave,onClose}){
   const [reps,setReps]=useState(init.reps);
   const [setsManual,setSetsManual]=useState(false);
   const [repsManual,setRepsManual]=useState(false);
-  const sugestoes = name.trim().length>=2 ? CATALOGO_EXEMPLO.filter(e=>e.toLowerCase().includes(name.toLowerCase()) && e.toLowerCase()!==name.toLowerCase()).slice(0,5) : [];
+  // busca no catálogo real (cache do Cardápio); fallback pro exemplo se cache vazio
+  const fonte = catalogo.length>0 ? catalogo.map(c=>({id:c.id,nome:c.nome,grupo:c.grupo})) : CATALOGO_EXEMPLO.map(n=>({id:null,nome:n,grupo:''}));
+  const nq=norm(name);
+  const sugestoes = name.trim().length>=2
+    ? fonte.filter(e=>norm(e.nome).includes(nq) && norm(e.nome)!==nq).slice(0,6)
+    : [];
+  const catVazio = catalogo.length===0;
+  const escolher=(op)=>{ setName(op.nome); setExerciseId(op.id); setShowAuto(false); };
   const save=()=>{
     if(!name.trim())return;
     const combined = (sets.trim()&&reps.trim()) ? `${sets.trim()} × ${reps.trim()}` : (sets.trim()||reps.trim()||'');
-    onSave({name:name.trim(),series:combined});
+    onSave({name:name.trim(), series:combined, exerciseId});
   };
   return (<div className="backdrop" onClick={onClose}>
     <div className="sheet" onClick={e=>e.stopPropagation()}>
       <h2>{initial?'Editar exercício':'Novo exercício'}</h2>
       <div className="h2sub">Nome, séries e repetições ficam fixos no treino. A carga você registra a cada aula.</div>
       <div className="field autowrap"><label>Exercício</label>
-        <input autoFocus value={name} onChange={e=>{setName(e.target.value);setShowAuto(true);}} onFocus={()=>setShowAuto(true)} placeholder="Ex: Supino Reto"/>
+        <input autoFocus value={name} onChange={e=>{setName(e.target.value);setExerciseId(null);setShowAuto(true);}} onFocus={()=>setShowAuto(true)} placeholder="Ex: Supino Reto"/>
+        {exerciseId!=null && <div className="vinculado">🔗 Vinculado ao Cardápio</div>}
         {showAuto && sugestoes.length>0 && <div className="autolist">
-          <div className="hint">Sugestões (catálogo de exemplo — Fase 2 puxa do Cardápio)</div>
-          {sugestoes.map(sug=>(<div key={sug} className="opt" onClick={()=>{setName(sug);setShowAuto(false);}}>{sug}</div>))}
+          <div className="hint">{catVazio?'Catálogo de exemplo (baixe o Cardápio nas configurações)':'Sugestões do Cardápio'}</div>
+          {sugestoes.map(op=>(<div key={(op.id!=null?op.id:op.nome)} className="opt" onClick={()=>escolher(op)}>
+            <span>{op.nome}</span>{op.grupo && <span className="optgrp">{op.grupo}</span>}
+          </div>))}
         </div>}
+        {showAuto && name.trim().length>=2 && sugestoes.length===0 && !catVazio &&
+          <div className="autolist"><div className="hint">Nenhum no Cardápio — será salvo como texto livre ✍️</div></div>}
       </div>
       <div className="field"><label>Séries</label>
         {setsManual
@@ -680,11 +756,11 @@ function TreinoView({db,setDb,nav,studentId,treinoId,flash}){
   const updExercises=(exs)=>setDb({...db,students:db.students.map(x=>x.id===studentId?{...x,treinos:x.treinos.map(tt=>tt.id===treinoId?{...tt,exercises:exs}:tt)}:x)});
   const saveEx=(data)=>{
     if(editingEx==='new'){
-      updExercises([...(t.exercises||[]),{id:uid(),name:data.name,series:data.series,logs:[]}]);
-      const herda=lastLogOfExercise(s,data.name);
+      updExercises([...(t.exercises||[]),{id:uid(),name:data.name,series:data.series,exerciseId:data.exerciseId,logs:[]}]);
+      const herda=lastLogOfExercise(s,data.name,data.exerciseId);
       flash(herda?('Adicionado — última carga '+herda.carga+' disponível ✓'):'Exercício adicionado ✓');
     }else{
-      updExercises(t.exercises.map(e=>e.id===editingEx.id?{...e,name:data.name,series:data.series}:e));
+      updExercises(t.exercises.map(e=>e.id===editingEx.id?{...e,name:data.name,series:data.series,exerciseId:data.exerciseId}:e));
       flash('Atualizado ✓');
     }
     setEditingEx(null);
@@ -716,7 +792,7 @@ function TreinoView({db,setDb,nav,studentId,treinoId,flash}){
       {(t.exercises||[]).length===0 && <div className="empty"><div className="big">＋</div>
         <p>Treino vazio. Toque em “+ Exercício” para montar. Depois, a cada aula, você só registra a carga.</p></div>}
       {(t.exercises||[]).map((ex,idx)=>{
-        const last=lastLogOfExercise(s,ex.name);
+        const last=lastLogOfExercise(s,ex.name,ex.exerciseId);
         const total=(t.exercises||[]).length;
         const done = ex.doneDate===todayISO();
         return (<div key={ex.id} className={'exrow'+(done?' done':'')}>
@@ -745,7 +821,7 @@ function TreinoView({db,setDb,nav,studentId,treinoId,flash}){
           </div>
           <div className="exactions">
             <button className="reg" onClick={()=>setRegistering(ex)}>Registrar hoje</button>
-            <button className="evo" onClick={()=>nav({name:'evolution',studentId,exName:ex.name,back:{name:'treino',studentId,treinoId}})}>Evolução</button>
+            <button className="evo" onClick={()=>nav({name:'evolution',studentId,exName:ex.name,exId:ex.exerciseId,back:{name:'treino',studentId,treinoId}})}>Evolução</button>
             <button className="mini" onClick={()=>setEditingEx(ex)}>✎</button>
             <button className="mini" onClick={()=>delEx(ex.id)}>🗑</button>
           </div>
@@ -754,16 +830,16 @@ function TreinoView({db,setDb,nav,studentId,treinoId,flash}){
     </div>
     <button className="fab" onClick={()=>setEditingEx('new')}>＋ Exercício</button>
     {editingEx && <ExerciseSheet initial={editingEx==='new'?null:editingEx} onSave={saveEx} onClose={()=>setEditingEx(null)}/>}
-    {registering && <RegisterSheet exName={registering.name} lastLog={lastLogOfExercise(s,registering.name)} onSave={saveLog} onClose={()=>setRegistering(null)}/>}
+    {registering && <RegisterSheet exName={registering.name} lastLog={lastLogOfExercise(s,registering.name,registering.exerciseId)} onSave={saveLog} onClose={()=>setRegistering(null)}/>}
   </React.Fragment>);
 }
-function Evolution({db,setDb,nav,studentId,exName,back,flash}){
+function Evolution({db,setDb,nav,studentId,exName,exId,back,flash}){
   const s=db.students.find(x=>x.id===studentId);
   const RC=getRC();
   const [editing,setEditing]=useState(null); // log em edição
   const [metrics,setMetrics]=useState({carga:true,volume:true,intensidade:false,dor:false});
   const toggle=(k)=>setMetrics(m=>({...m,[k]:!m[k]}));
-  const entries=allLogsOfExercise(s,exName);
+  const entries=allLogsOfExercise(s,exName,exId);
   const chartData=entries.map(e=>{
     const c=numFrom(e.carga), r=numFrom(e.reps);
     return {date:fmtDate(e.date), carga:c, volume:(c!=null&&r!=null)?c*r:null,
