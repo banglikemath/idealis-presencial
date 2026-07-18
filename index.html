@@ -226,10 +226,9 @@ const SYNC_URL = 'https://script.google.com/macros/s/AKfycbxl0TnXNC_P4rsGYGWtkIC
 const QUEUE_KEY = 'idealis_presencial_fila_v1';
 const SYNCMETA_KEY = 'idealis_presencial_syncmeta_v1';
 const ESTRUTURA_DIRTY_KEY = 'idealis_presencial_estrutura_dirty_v1';
-/* monta o snapshot da estrutura SEM o check efêmero "doneDate" */
+/* snapshot de conteúdo (SEM timestamp volátil) — usado pra detectar mudança e pra enviar */
 function buildEstruturaSnapshot(db){
   return {
-    exportado_em: new Date().toISOString(),
     students: (db.students||[]).map(s=>({
       id:s.id, name:s.name,
       treinos:(s.treinos||[]).map(t=>({
